@@ -20,6 +20,7 @@ Plug 'lambdalisue/vim-rplugin'
 Plugins which use vim-rplugin to support Vim 8
 -------------------------------------------------------------------------------
 
+- [lambdalisue/prompt.nvim](https://github.com/lambdalisue/prompt.nvim)
 - [lambdalisue/lista.nvim](https://github.com/lambdalisue/lista.nvim)
 
 
