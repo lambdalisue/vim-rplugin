@@ -18,8 +18,8 @@ export[:] = [
 ]
 EOC
       Assert Equals(export[0], '<class ''rplugin.module:Proxy''>')
-      Assert Equals(export[1], '<class ''vim.dictionary''>')
-      Assert Equals(export[2], '<class ''vim.options''>')
+      Assert Equals(export[1], '<type ''vim.dictionary''>')
+      Assert Equals(export[2], '<type ''vim.options''>')
     End
   End
 
@@ -40,9 +40,9 @@ export[:] = [
 ]
 EOC
       Assert Equals(export[0], '<class ''rplugin.FuncNamespace''>')
-      Assert Equals(export[1], '<class ''function''>')
+      Assert Equals(export[1], '<type ''vim.function''>')
       Assert Equals(export[2], 'hello')
-      Assert Equals(export[3], '<class ''str''>')
+      Assert Equals(export[3], '<type ''str''>')
     End
   End
 

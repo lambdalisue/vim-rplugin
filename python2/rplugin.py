@@ -1,10 +1,13 @@
-class Proxy:
+class Proxy(object):
     def __init__(self, component):
         self._component = component
         self.__class__ = build_proxy(self, component)
 
+    def __getattr__(self, name):
+        return getattr(self._component, name)
 
-class FuncNamespace:
+
+class FuncNamespace(object):
     __slots__ = ['vim']
 
     def __init__(self, vim):
@@ -17,7 +20,7 @@ class FuncNamespace:
 class Neovim(Proxy):
     def __init__(self, vim):
         self.funcs = FuncNamespace(vim)
-        super().__init__(vim)
+        super(Neovim, self).__init__(vim)
 
     def call(self, name, *args):
         return self.Function(name)(*args)
