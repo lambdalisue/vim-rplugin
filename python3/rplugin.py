@@ -21,52 +21,77 @@ def reform_bytes(value):
 
 class Proxy:
     def __init__(self, component):
-        self.component = component
-        self.__class__ = self.__class__.extend(component.__class__)
+        self._component = component
+        self.__class__ = build_proxy(self, component)
 
     def __getattr__(self, name):
-        value = getattr(self.component, name)
-        return self.__class__.decorate(value)
-
-    @classmethod
-    def extend(cls, component_cls):
-        decorator = type('ProxyExtended', (cls,), {})
-
-        def bind(attr):
-            if hasattr(decorator, attr) or not hasattr(component_cls, attr):
-                return
-            ori = getattr(component_cls, attr)
-
-            def mod(self, *args, **kwargs):
-                return ori(self.component, *args, **kwargs)
-
-            setattr(decorator, attr, mod)
-
-        for attr in component_cls.__dict__.keys():
-            bind(attr)
-        return decorator
-
-    @classmethod
-    def decorate(cls, component):
-        if component in (vim.buffers, vim.windows, vim.tabpages, vim.current):
-            return Proxy(component)
-        elif isinstance(component, (vim.Buffer, vim.Window, vim.TabPage)):
-            return Proxy(component)
-        elif isinstance(component, (vim.List, vim.Dictionary, vim.Options)):
-            return ContainerProxy(component)
-        return component
+        value = getattr(self._component, name)
+        return decorate(value)
 
 
 class ContainerProxy(Proxy):
     def __getitem__(self, key):
-        return reform_bytes(self.component[key])
+        return reform_bytes(self._component[key])
 
     def __setitem__(self, key, value):
         if isinstance(value, str):
-            value = value.encode(ENCODING)
-        self.component[key] = value
+            value = value.encode(ENCODING, 'surrogateescape')
+        self._component[key] = value
+
+
+class FuncNamespace:
+    __slots__ = ['vim']
+
+    def __init__(self, vim):
+        self.vim = vim
+
+    def __getattr__(self, name):
+        fn = self.vim.Function(name)
+        return lambda *args: reform_bytes(fn(*args))
 
 
 class Neovim(Proxy):
+    def __init__(self, vim):
+        self.funcs = FuncNamespace(vim)
+        super().__init__(vim)
+
     def call(self, name, *args):
         return reform_bytes(self.Function(name)(*args))
+
+
+def build_proxy(child, parent):
+    proxy = type(
+        "%s:%s" % (
+            type(parent).__name__,
+            child.__class__.__name__,
+        ),
+        (child.__class__,), {}
+    )
+    child_class = child.__class__
+    parent_class = parent.__class__
+
+    def bind(attr):
+        if hasattr(child_class, attr) or not hasattr(parent_class, attr):
+            return
+
+        ori = getattr(parent_class, attr)
+
+        def mod(self, *args, **kwargs):
+            return ori(self._component, *args, **kwargs)
+
+        setattr(proxy, attr, mod)
+
+    for attr in parent_class.__dict__.keys():
+        bind(attr)
+
+    return proxy
+
+
+def decorate(component):
+    if component in (vim.buffers, vim.windows, vim.tabpages, vim.current):
+        return Proxy(component)
+    elif isinstance(component, (vim.Buffer, vim.Window, vim.TabPage)):
+        return Proxy(component)
+    elif isinstance(component, (vim.List, vim.Dictionary, vim.Options)):
+        return ContainerProxy(component)
+    return component

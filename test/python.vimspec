@@ -1,0 +1,69 @@
+if !has('python')
+  finish
+endif
+
+Describe Python
+  Describe Proxy()
+    It wraps {component} and create a new proxy instance
+      let export = []
+python << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+pvim = rplugin.Proxy(vim)
+export[:] = [
+  repr(type(pvim)),
+  repr(type(pvim.vars)),
+  repr(type(pvim.options)),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.module:Proxy''>')
+      Assert Equals(export[1], '<class ''vim.dictionary''>')
+      Assert Equals(export[2], '<class ''vim.options''>')
+    End
+  End
+
+  Describe FuncNamespace()
+    It returns function namespace object
+      call setreg('@', "hello")
+      let export = []
+python << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+funcs = rplugin.FuncNamespace(vim)
+export[:] = [
+  repr(type(funcs)),
+  repr(type(funcs.getreg)),
+  funcs.getreg('@'),
+  repr(type(funcs.getreg('@'))),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.FuncNamespace''>')
+      Assert Equals(export[1], '<class ''function''>')
+      Assert Equals(export[2], 'hello')
+      Assert Equals(export[3], '<class ''str''>')
+    End
+  End
+
+  Describe Neovim()
+    It returns a neovim proxy
+      call setreg('@', "hello")
+      let export = []
+python << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+nvim = rplugin.Neovim(vim)
+export[:] = [
+  repr(type(nvim)),
+  nvim.funcs.getreg('@'),
+  nvim.call('getreg', '@'),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.module:Neovim''>')
+      Assert Equals(export[1], 'hello')
+      Assert Equals(export[2], 'hello')
+    End
+  End
+End

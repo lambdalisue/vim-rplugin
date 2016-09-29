@@ -1,0 +1,260 @@
+if !has('python3')
+  finish
+endif
+
+Describe Python3
+  Describe reform_bytes()
+    Context eval -> str
+      It reform bytes into str
+        let export = []
+        let text = 'abcde'
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+text = vim.eval('text')
+export[:] = [
+  repr(type(text)),
+  repr(type(rplugin.reform_bytes(text))),
+]
+EOC
+        Assert Equals(export[0], '<class ''str''>')
+        Assert Equals(export[1], '<class ''str''>')
+      End
+
+      It reform bytes into str in dict
+        let export = []
+        let data = { 'foo': 'bar' }
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+raw = vim.eval('data')
+mod = rplugin.reform_bytes(raw)
+export[:] = [
+  repr(type(raw)),
+  repr(type(mod)),
+  list(map(lambda x: repr(type(x)), *raw.items())),
+  list(map(lambda x: repr(type(x)), *mod.items())),
+]
+EOC
+        Assert Equals(export[0], '<class ''dict''>')
+        Assert Equals(export[1], '<class ''dict''>')
+        Assert Equals(export[2][0], '<class ''str''>')
+        Assert Equals(export[2][1], '<class ''str''>')
+        Assert Equals(export[3][0], '<class ''str''>')
+        Assert Equals(export[3][1], '<class ''str''>')
+      End
+
+      It reform bytes into str in list
+        let export = []
+        let data = [ 'foo', ]
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+raw = vim.eval('data')
+mod = rplugin.reform_bytes(raw)
+export[:] = [
+  repr(type(raw)),
+  repr(type(mod)),
+  repr(type(raw[0])),
+  repr(type(mod[0])),
+]
+EOC
+        Assert Equals(export[0], '<class ''list''>')
+        Assert Equals(export[1], '<class ''list''>')
+        Assert Equals(export[2], '<class ''str''>')
+        Assert Equals(export[3], '<class ''str''>')
+      End
+    End
+
+    Context bindeval -> bytes
+      It reform bytes into str
+        let export = []
+        let text = 'abcde'
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+text = vim.bindeval('text')
+export[:] = [
+  repr(type(text)),
+  repr(type(rplugin.reform_bytes(text))),
+]
+EOC
+        Assert Equals(export[0], '<class ''bytes''>')
+        Assert Equals(export[1], '<class ''str''>')
+      End
+
+      It reform bytes into str in dict
+        let export = []
+        let data = { 'foo': 'bar' }
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+raw = vim.bindeval('data')
+mod = rplugin.reform_bytes(raw)
+export[:] = [
+  repr(type(raw)),
+  repr(type(mod)),
+  list(map(lambda x: repr(type(x)), *raw.items())),
+  list(map(lambda x: repr(type(x)), *mod.items())),
+]
+EOC
+        Assert Equals(export[0], '<class ''vim.dictionary''>')
+        Assert Equals(export[1], '<class ''dict''>')
+        Assert Equals(export[2][0], '<class ''bytes''>')
+        Assert Equals(export[2][1], '<class ''bytes''>')
+        Assert Equals(export[3][0], '<class ''str''>')
+        Assert Equals(export[3][1], '<class ''str''>')
+      End
+
+      It reform bytes into str in list
+        let export = []
+        let data = [ 'foo', ]
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+raw = vim.bindeval('data')
+mod = rplugin.reform_bytes(raw)
+export[:] = [
+  repr(type(raw)),
+  repr(type(mod)),
+  repr(type(raw[0])),
+  repr(type(mod[0])),
+]
+EOC
+        Assert Equals(export[0], '<class ''vim.list''>')
+        Assert Equals(export[1], '<class ''list''>')
+        Assert Equals(export[2], '<class ''bytes''>')
+        Assert Equals(export[3], '<class ''str''>')
+      End
+    End
+
+    Context vars -> bytes
+      It reform bytes into str
+        let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+text = vim.vvars['progname']
+export[:] = [
+  repr(type(text)),
+  repr(type(rplugin.reform_bytes(text))),
+]
+EOC
+        Assert Equals(export[0], '<class ''bytes''>')
+        Assert Equals(export[1], '<class ''str''>')
+      End
+    End
+
+    Context options -> bytes
+      It reform bytes into str
+        let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+text = vim.options['runtimepath']
+export[:] = [
+  repr(type(text)),
+  repr(type(rplugin.reform_bytes(text))),
+]
+EOC
+        Assert Equals(export[0], '<class ''bytes''>')
+        Assert Equals(export[1], '<class ''str''>')
+      End
+    End
+  End
+
+  Describe Proxy()
+    It wraps {component} and create a new proxy instance
+      let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+pvim = rplugin.Proxy(vim)
+export[:] = [
+  repr(type(pvim)),
+  repr(type(pvim.vars)),
+  repr(type(pvim.options)),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.module:Proxy''>')
+      Assert Equals(export[1], '<class ''rplugin.dictionary:ContainerProxy''>')
+      Assert Equals(export[2], '<class ''rplugin.options:ContainerProxy''>')
+    End
+  End
+
+  Describe ContainerProxy()
+    It wraps {component} and create a new container proxy instance
+      let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+vvars = rplugin.ContainerProxy(vim.vvars)
+export[:] = [
+  repr(type(vim.vvars)),
+  repr(type(vvars)),
+  repr(type(vim.vvars['progname'])),
+  repr(type(vvars['progname'])),
+]
+EOC
+      Assert Equals(export[0], '<class ''vim.dictionary''>')
+      Assert Equals(export[1], '<class ''rplugin.dictionary:ContainerProxy''>')
+      Assert Equals(export[2], '<class ''bytes''>')
+      Assert Equals(export[3], '<class ''str''>')
+    End
+  End
+
+  Describe FuncNamespace()
+    It returns function namespace object
+      call setreg('@', "hello")
+      let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+funcs = rplugin.FuncNamespace(vim)
+export[:] = [
+  repr(type(funcs)),
+  repr(type(funcs.getreg)),
+  funcs.getreg('@'),
+  repr(type(funcs.getreg('@'))),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.FuncNamespace''>')
+      Assert Equals(export[1], '<class ''function''>')
+      Assert Equals(export[2], 'hello')
+      Assert Equals(export[3], '<class ''str''>')
+    End
+  End
+
+  Describe Neovim()
+    It returns a neovim proxy
+      call setreg('@', "hello")
+      let export = []
+python3 << EOC
+import vim
+import rplugin
+export = vim.bindeval('export')
+nvim = rplugin.Neovim(vim)
+export[:] = [
+  repr(type(nvim)),
+  nvim.funcs.getreg('@'),
+  nvim.call('getreg', '@'),
+]
+EOC
+      Assert Equals(export[0], '<class ''rplugin.module:Neovim''>')
+      Assert Equals(export[1], 'hello')
+      Assert Equals(export[2], 'hello')
+    End
+
+  End
+End
