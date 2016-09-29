@@ -20,8 +20,6 @@ Use rplugin.Neovim proxy class to
 
 - Adds vim.call(name, *args) interface
 - Returns str instead of bytes in Python 3
-- Returns '\udc80' instead of b'\x80' for special key in |getchar()|
-  function
 
 See an example plugin repository at
 
