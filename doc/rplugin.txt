@@ -19,6 +19,7 @@ USAGE						*vim-XXXXX-usage*
 Use rplugin.Neovim proxy class to
 
 - Adds vim.call(name, *args) interface
+- Adds vim.funcs.{name}(*args) interface
 - Returns str instead of bytes in Python 3
 
 See an example plugin repository at

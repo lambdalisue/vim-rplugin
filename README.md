@@ -1,5 +1,7 @@
 vim-rplugin
 ===============================================================================
+[![Travis CI](https://img.shields.io/travis/lambdalisue/vim-rplugin/master.svg?style=flat-square&label=Travis%20CI)](https://travis-ci.org/lambdalisue/vim-rplugin)
+[![AppVeyor](https://img.shields.io/appveyor/ci/lambdalisue/vim-rplugin/master.svg?style=flat-square&label=AppVeyor)](https://ci.appveyor.com/project/lambdalisue/vim-rplugin/branch/master)
 ![Version 0.1.0](https://img.shields.io/badge/version-0.1.0-yellow.svg?style=flat-square)
 ![Support Vim 8.0 or above](https://img.shields.io/badge/support-Vim%208.0%20or%20above-yellowgreen.svg?style=flat-square)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE.md)
@@ -30,6 +32,7 @@ Usage
 Wrap `vim` instance with a `rplugin.Neovim` proxy class to 
 
 - Adds `vim.call(name, *args)` interface
+- Adds `vim.funcs.{fname}(*args)` interface
 - Returns str instead of bytes in Python 3
 
 You can see a demo project at http://github.com/lambdalisue/vim-rplugin-test
